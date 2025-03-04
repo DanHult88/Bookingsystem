@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Booking</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Restaurant Booking System</h1>
+    <p>Click a table to book/unbook.</p>
+
+    <div class="container" id="tableContainer"></div>
+
+    <script>
+        const API_URL = "http://localhost:3000"; 
+
+        async function fetchTables() {
+            const response = await fetch(`${API_URL}/tables`);
+            const tables = await response.json();
+            renderTables(tables);
+        }
+
+        async function toggleBooking(index, isBooked) {
+            const endpoint = isBooked ? "/unbook" : "/book";
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tableIndex: index }),
+            });
+            
+            if (response.ok) {
+                fetchTables(); // Refresh tables after booking/unbooking
+            } else {
+                const data = await response.json();
+                alert(data.message); // Show error message
+            }
+        }
+
+        function renderTables(tables) {
+            const container = document.getElementById("tableContainer");
+            container.innerHTML = ""; // Clear any existing table elements
+
+            tables.forEach((isBooked, index) => {
+                const tableDiv = document.createElement("div");
+                tableDiv.classList.add("table", isBooked ? "booked" : "available");
+                tableDiv.innerText = `T${index + 1}`;
+                tableDiv.onclick = () => toggleBooking(index, isBooked);
+                container.appendChild(tableDiv);
+            });
+        }
+
+        fetchTables(); // Fetch the tables initially
+    </script>
+
+</body>
+</html>
